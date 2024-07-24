@@ -4,6 +4,7 @@ from typing import List
 import requests
 from datetime import datetime
 from utils import Offset, Point, Region, UserImage
+import os
 
 
 class CaptchaSolver:
@@ -23,7 +24,7 @@ class CaptchaSolver:
 
     def __init__(self, stop_event, ref_point: Point):
         self.ref_point = ref_point
-        self.solver = TwoCaptcha("c580c441b1a4562530582766ac6a1221")
+        self.solver = TwoCaptcha(self.get_api_key())
         self.captcha_image_region = Region(
             left=self.ref_point.x - 58,
             width=84,
@@ -38,9 +39,19 @@ class CaptchaSolver:
         )
         self.stop_event = stop_event
 
+    def get_api_key(self):
+        key = os.environ.get("CAPTCHA_API_KEY", None)
+        if not key:
+            raise Exception("Captcha key is not found !")
+
+    def get_notify_key(self):
+        key = os.environ.get("NOTIFY_KEY", None)
+        if not key:
+            raise Exception("Notify App key is not found !")
+
     def notify_solved_captcha(self, captcha_solution):
         requests.get(
-            f"https://pushnotify.co.uk/send/?userid=aliouidhia&code=596422&txt=Solved captcha : {captcha_solution}"
+            f"https://pushnotify.co.uk/send/?userid=aliouidhia&code={self.get_notify_key()}&txt=Solved captcha : {captcha_solution}"
         )
 
     def is_captcha_detected(self, img: UserImage) -> bool:
@@ -78,7 +89,7 @@ class CaptchaSolver:
             coor_to_click = [
                 self.ref_point + CaptchaSolver.BUTTON_MAP[int(str_num)]
                 for str_num in code
-            ] + [self.ref_point +CaptchaSolver.BUTTON_MAP["enter"]]
+            ] + [self.ref_point + CaptchaSolver.BUTTON_MAP["enter"]]
             self.notify_solved_captcha(captcha_solution=code)
             print(
                 f"Captcha points to click : {[str(p) for p in coor_to_click]}"

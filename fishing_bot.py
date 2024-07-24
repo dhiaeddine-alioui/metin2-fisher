@@ -46,11 +46,11 @@ class FishingBot(threading.Thread):
     def run(self):
         while not self.stop_event.is_set():
             screen_shot = self.video_capturer.capture_screenshot()
-            if not screen_shot: 
+            if not screen_shot:
                 continue
-            
+
             if self.gm_detector.is_gm_connected(screen_shot):
-                print('GM is connected ! Waiting for him to go offline ....')
+                print("GM is connected ! Waiting for him to go offline ....")
                 time.sleep(10)
                 continue
 
